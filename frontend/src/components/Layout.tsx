@@ -23,7 +23,7 @@ export const Layout = () => {
           fontWeight: 'bold',
           textShadow: '2px 2px 0px #333' // 文字にもポップな影をつけます
         }}>
-          👾 てづくり育成アプリ(仮)
+          👾 drama doll
         </h2>
       </header>
 
