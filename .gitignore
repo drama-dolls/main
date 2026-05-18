@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- 以下、今回のアプリ用に追加 ---
+node_modules/
+venv/
+.env
+__pycache__/
