@@ -3,7 +3,7 @@ import { Layout } from './components/Layout';
 
 // ※本来は pages フォルダを作って別ファイルにしますが、今回はテスト用にここに書きます
 const HomePage = () => <div>ここはホーム画面yo。メーターやキャラが表示されます。</div>;
-const TodoPage = () => <div>ここはToDo画面です。タスク一覧が表示されます。</div>;
+import TodoPage from "./pages/to-do";
 const GachaPage = () => <div>ここはガチャ画面です。演出が入ります。</div>;
 const MyPage = () => <div>ここはマイページです。着せ替えをします。</div>;
 
