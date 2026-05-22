@@ -1,6 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
+import datetime
 
 import models
 from database import engine, get_db
@@ -18,28 +21,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class UserCreate(BaseModel):
+    username: str
+    remind_time: Optional[str] = None 
+
+
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI"}
 
 
-
-# ユーザーを1人登録する (POST)
 @app.post("/users/")
-def create_user(username: str, db: Session = Depends(get_db)):
-    # 新しいユーザーオブジェクトを作る
-    new_user = models.User(username=username, points=0)
-    # DBに追加してコミット（保存）
+def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    # 時間の文字列をPythonのtimeオブジェクトに変換
+    parsed_time = None
+    if user_data.remind_time:
+        try:
+            parsed_time = datetime.time.fromisoformat(user_data.remind_time)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid time format. Use HH:MM")
+
+    new_user = models.User(
+        username=user_data.username, 
+        points=0,
+        remind_time=parsed_time
+    )
     db.add(new_user)
     db.commit()
-    db.refresh(new_user) # IDなどが確定した最新状態を反映
+    db.refresh(new_user)
     return new_user
 
-
-# ユーザー情報をIDで取得する (GET)
 @app.get("/users/{user_id}")
 def read_user(user_id: int, db: Session = Depends(get_db)):
-    # DBから指定されたIDのユーザーを検索
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
