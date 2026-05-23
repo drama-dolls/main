@@ -4,9 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import models
 from database import engine
-from routers import users, tasks, gacha, summary
-
-models.Base.metadata.create_all(bind=engine)
+from routers import users, tasks, gacha, summary, auth
+# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -19,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(tasks.router)
 app.include_router(gacha.router)

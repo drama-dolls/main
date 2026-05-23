@@ -5,13 +5,13 @@ from database import Base
 
 class User(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), nullable=False)
+    username = Column(String(50), nullable=False, unique=True)
+    password = Column(String(255), nullable=False)
     points = Column(Integer, nullable=False, default=0)
-    remind_time = Column(Time, nullable=True) 
+    remind_time = Column(Time, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
-
+    
 class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)
