@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine
 from routers import users, tasks, gacha, summary, auth
-models.Base.metadata.create_all(bind=engine)
+
+try:
+    models.Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Warning: Could not create database tables: {e}")
 
 app = FastAPI()
 
