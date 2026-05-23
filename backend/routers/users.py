@@ -15,16 +15,22 @@ class UserUpdate(BaseModel):
     remind_time: Optional[str] = None
 
 
+class SelectionUpdate(BaseModel):
+    character_id: Optional[int] = None
+    costume_id: Optional[int] = None
+
+
 @router.get("/users/me")
 def get_me(
     current_user: models.User = Depends(get_current_user)
 ):
     return {
-        "id":          current_user.id,
-        "username":    current_user.username,
-        "points":      current_user.points,
+        "id": current_user.id,
+        "username": current_user.username,
+        "allowance_pt": current_user.allowance_pt,
+        "health_meter": current_user.health_meter,
         "remind_time": current_user.remind_time,
-        "created_at":  current_user.created_at,
+        "created_at": current_user.created_at,
     }
 
 
@@ -39,13 +45,51 @@ def update_me(
             current_user.remind_time = datetime.time.fromisoformat(body.remind_time)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid time format. Use HH:MM")
-
     db.commit()
     db.refresh(current_user)
     return {
-        "id":          current_user.id,
-        "username":    current_user.username,
-        "points":      current_user.points,
+        "username": current_user.username,
+        "allowance_pt": current_user.allowance_pt,
+        "health_meter": current_user.health_meter,
         "remind_time": current_user.remind_time,
+    }
+
+
+@router.patch("/users/me/selection")
+def update_selection(
+    body: SelectionUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    # 衣装を持っているか確認
+    if body.costume_id:
+        owned = db.query(models.UserCostume).filter(
+            models.UserCostume.user_id == current_user.id,
+            models.UserCostume.costume_id == body.costume_id,
+        ).first()
+        if not owned:
+            raise HTTPException(status_code=403, detail="Costume not owned")
+
+    selection = db.query(models.UserSelection).filter(
+        models.UserSelection.user_id == current_user.id
+    ).first()
+
+    if selection:
+        if body.character_id is not None:
+            selection.character_id = body.character_id
+        if body.costume_id is not None:
+            selection.costume_id = body.costume_id
+    else:
+        selection = models.UserSelection(
+            user_id=current_user.id,
+            character_id=body.character_id,
+            costume_id=body.costume_id,
+        )
+        db.add(selection)
+
+    db.commit()
+    return {
+        "character_id": selection.character_id,
+        "costume_id": selection.costume_id,
     }
   

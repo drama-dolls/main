@@ -1,5 +1,5 @@
 import datetime
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import models
@@ -16,7 +16,6 @@ def get_summary(
 ):
     today = datetime.date.today()
 
-    # 今日のタスク＋ルーティン全件取得
     tasks = db.query(models.Task).filter(
         models.Task.user_id == current_user.id,
         models.Task.is_deleted == False
@@ -26,17 +25,23 @@ def get_summary(
 
     total = len(tasks)
     done = len([t for t in tasks if t.is_done])
-    rate = (done / total * 100) if total > 0 else 0
+
+    selection = db.query(models.UserSelection).filter(
+        models.UserSelection.user_id == current_user.id
+    ).first()
 
     return {
         "user": {
-            "id": current_user.id,
             "username": current_user.username,
-            "points": current_user.points,
+            "allowance_pt": current_user.allowance_pt,
+            "health_meter": current_user.health_meter,
         },
         "progress": {
             "done": done,
             "total": total,
-            "achievement_rate": round(rate, 1),
+        },
+        "selection": {
+            "character_id": selection.character_id if selection else None,
+            "costume_id": selection.costume_id if selection else None,
         }
     }

@@ -9,76 +9,73 @@ from routers.auth import get_current_user
 router = APIRouter()
 
 GACHA_COST = 30
-
-RARITY_TABLE = [
-    {"rarity": "SR", "weight": 5},
-    {"rarity": "R",  "weight": 30},
-    {"rarity": "N",  "weight": 65},
-]
-
+DUPLICATE_REFUND = 10
 
 @router.post("/gacha/pull")
 def pull_gacha(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if current_user.points < GACHA_COST:
+    if current_user.allowance_pt < GACHA_COST:
         raise HTTPException(status_code=400, detail="Not enough points")
 
-    rarities = [r["rarity"] for r in RARITY_TABLE]
-    weights = [r["weight"] for r in RARITY_TABLE]
-    chosen_rarity = random.choices(rarities, weights=weights, k=1)[0]
+    costumes = db.query(models.Costume).all()
+    if not costumes:
+        raise HTTPException(status_code=404, detail="No costumes available")
 
-    items = db.query(models.Item).filter(models.Item.rarity == chosen_rarity).all()
-    if not items:
-        raise HTTPException(status_code=404, detail="No items available for this rarity")
+    chosen = random.choices(costumes, weights=[c.weight for c in costumes], k=1)[0]
 
-    chosen_item = random.choice(items)
-
-    already_owned = db.query(models.UserItem).filter(
-        models.UserItem.user_id == current_user.id,
-        models.UserItem.item_id == chosen_item.id
+    already_owned = db.query(models.UserCostume).filter(
+        models.UserCostume.user_id == current_user.id,
+        models.UserCostume.costume_id == chosen.id
     ).first()
 
     is_duplicate = already_owned is not None
+    current_user.allowance_pt -= GACHA_COST
 
-    current_user.points -= GACHA_COST
     if is_duplicate:
-        current_user.points += 10
+        current_user.allowance_pt += DUPLICATE_REFUND
     else:
-        db.add(models.UserItem(user_id=current_user.id, item_id=chosen_item.id))
+        db.add(models.UserCostume(user_id=current_user.id, costume_id=chosen.id))
 
     db.commit()
 
+    character = db.query(models.Character).filter(
+        models.Character.id == chosen.character_id
+    ).first()
+
     return {
-        "item_id": chosen_item.id,
-        "item_name": chosen_item.name,
-        "rarity": chosen_item.rarity,
+        "costume_id": chosen.id,
+        "costume_name": chosen.name,
+        "character_name": character.name if character else None,
+        "rarity": chosen.rarity,
+        "image_url": chosen.image_url,
         "is_duplicate": is_duplicate,
-        "points_remaining": current_user.points,
+        "allowance_pt": current_user.allowance_pt,
     }
 
-
-@router.get("/gacha/items")
-def get_my_items(
+@router.get("/gacha/costumes")
+def get_my_costumes(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    user_items = db.query(models.UserItem).filter(
-        models.UserItem.user_id == current_user.id
+    user_costumes = db.query(models.UserCostume).filter(
+        models.UserCostume.user_id == current_user.id
     ).all()
 
     result = []
-    for ui in user_items:
-        item = db.query(models.Item).filter(models.Item.id == ui.item_id).first()
+    for uc in user_costumes:
+        costume = db.query(models.Costume).filter(models.Costume.id == uc.costume_id).first()
+        character = db.query(models.Character).filter(models.Character.id == costume.character_id).first()
         result.append({
-            "user_item_id": ui.id,
-            "item_id": item.id,
-            "item_name": item.name,
-            "rarity": item.rarity,
-            "image_url": item.image_url,
-            "is_equipped": ui.is_equipped,
-            "obtained_at": ui.obtained_at,
+            "user_costume_id": uc.id,
+            "costume_id": costume.id,
+            "costume_name": costume.name,
+            "character_id": character.id,
+            "character_name": character.name,
+            "rarity": costume.rarity,
+            "image_url": costume.image_url,
+            "obtained_at": uc.obtained_at,
         })
 
     return result

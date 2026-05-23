@@ -65,7 +65,6 @@ def register(
     new_user = models.User(
         username=form_data.username,
         password=get_password_hash(form_data.password),
-        points=0
     )
     db.add(new_user)
     db.commit()
