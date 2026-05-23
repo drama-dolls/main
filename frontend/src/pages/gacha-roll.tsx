@@ -30,6 +30,7 @@ export default function GachaRollPage() {
 
     setTimeout(() => setFlipped(true), 500);
     setTimeout(() => navigate("/gacha"), 2500);
+
   }, [navigate]);
 
   return (
@@ -41,7 +42,6 @@ export default function GachaRollPage() {
         gap: "24px",
         position: "relative",
 
-        // ✅ 同じチェック柄（完全一致）
         background:
           "linear-gradient(0deg, rgba(179,229,252,0.7) 50%, transparent 50%), " +
           "linear-gradient(90deg, rgba(179,229,252,0.7) 50%, transparent 50%), #FFFFFF",
@@ -58,7 +58,6 @@ export default function GachaRollPage() {
         justifyContent: "center",
       }}
     >
-      {/* 戻る */}
       <button
         onClick={() => navigate("/gacha")}
         style={{
@@ -68,13 +67,11 @@ export default function GachaRollPage() {
           border: "none",
           background: "none",
           cursor: "pointer",
-          fontSize: "16px",
         }}
       >
         ← 戻る
       </button>
 
-      {/* カード */}
       <div className={`card ${flipped ? "flipped" : ""}`}>
         <div className="card-back">Drama Doll</div>
 
@@ -102,9 +99,9 @@ export default function GachaRollPage() {
         .card {
           width: 220px;
           height: 300px;
-          position: relative;
           transform-style: preserve-3d;
           transition: transform 0.5s;
+          position: relative;
         }
 
         .flipped {
@@ -116,16 +113,14 @@ export default function GachaRollPage() {
           position: absolute;
           width: 100%;
           height: 100%;
-
           border-radius: 20px;
           border: 3px solid #333;
-
           background: white;
 
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
+          flex-direction: column;
 
           backface-visibility: hidden;
         }

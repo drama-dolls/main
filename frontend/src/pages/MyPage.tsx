@@ -1,11 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 export const MyPage = () => {
+  const navigate = useNavigate();
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+
   const [notifications, setNotifications] = useState(true);
   const [selectedChar, setSelectedChar] = useState('うさぎ');
 
-  // 4分割の枠に綺麗に収まるように、余白などを少しコンパクトに調整しました
+  // ✅ APIからユーザー取得（UI変更なし・ロジックのみ追加）
+  useEffect(() => {
+    const fetchUser = async () => {
+      const savedLogin = localStorage.getItem("isLoggedIn");
+
+      if (savedLogin === "true") {
+        setIsLoggedIn(true);
+
+        try {
+          const res = await fetch("http://localhost:8000/users/1");
+          const data = await res.json();
+
+          setUserName(data.name);
+        } catch (err) {
+          console.log("ユーザー取得エラー");
+        }
+      }
+    };
+
+    fetchUser();
+
+    // ✅ 戻ってきたとき更新
+    window.addEventListener("focus", fetchUser);
+
+    return () => {
+      window.removeEventListener("focus", fetchUser);
+    };
+  }, []);
+
   const cardStyle = {
     backgroundColor: '#FFF',
     border: '3px solid #333',
@@ -14,7 +47,7 @@ export const MyPage = () => {
     boxShadow: '4px 4px 0px rgba(0,0,0,0.1)',
     display: 'flex',
     flexDirection: 'column' as const,
-    justifyContent: 'center', // 縦の中央に寄せてバランスを良くする
+    justifyContent: 'center',
     gap: '12px',
     height: '100%', 
     boxSizing: 'border-box' as const
@@ -35,23 +68,31 @@ export const MyPage = () => {
         👤 マイページ
       </h2>
 
-      {/* ★ここを変更！縦並びから、2x2のグリッド（格子）レイアウトにしました */}
+      {/* グリッド */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: '1fr 1fr', // 横に2分割（1:1の割合）
-        gridTemplateRows: '1fr 1fr',    // 縦に2分割（1:1の割合）
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: '1fr 1fr',
         gap: '16px', 
-        flexGrow: 1                     // 画面の残りの高さをいっぱいに使う
+        flexGrow: 1
       }}>
         
-        {/* 1. ログインエリア（左上） */}
+        {/* 1. ログインエリア */}
         <div style={cardStyle}>
           <h3 style={{ margin: 0, fontSize: '14px', color: '#666', textAlign: 'center' }}>アカウント</h3>
+
           {isLoggedIn ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '16px' }}>ユーザー 様</span>
+              <span style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                {userName} 様
+              </span>
+
               <button 
-                onClick={() => setIsLoggedIn(false)}
+                onClick={() => {
+                  localStorage.removeItem("isLoggedIn");
+                  setIsLoggedIn(false);
+                  setUserName("");
+                }}
                 style={{ padding: '6px 12px', borderRadius: '12px', border: '2px solid #333', backgroundColor: '#e0e0e0', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
               >
                 ログアウト
@@ -59,9 +100,12 @@ export const MyPage = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-              <p style={{ margin: 0, fontSize: '12px', color: '#666', textAlign: 'center' }}>データを保存！</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#666', textAlign: 'center' }}>
+                データを保存！
+              </p>
+
               <button 
-                onClick={() => setIsLoggedIn(true)}
+                onClick={() => navigate("/account")}
                 style={{ padding: '8px 12px', borderRadius: '12px', border: '2px solid #333', backgroundColor: '#FF9F1C', color: '#FFF', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', boxShadow: '2px 2px 0px #333' }}
               >
                 ログイン / 登録
@@ -70,7 +114,7 @@ export const MyPage = () => {
           )}
         </div>
 
-        {/* 2. キャラ選択エリア（右上） */}
+        {/* 2. キャラ選択エリア */}
         <div style={cardStyle}>
           <h3 style={{ margin: 0, fontSize: '14px', color: '#666', textAlign: 'center' }}>パートナー</h3>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -101,7 +145,7 @@ export const MyPage = () => {
           </p>
         </div>
 
-        {/* 3. 実績確認エリア（左下） */}
+        {/* 3. 実績 */}
         <div style={cardStyle}>
           <h3 style={{ margin: 0, fontSize: '14px', color: '#666', textAlign: 'center' }}>実績</h3>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
@@ -114,7 +158,7 @@ export const MyPage = () => {
           </ul>
         </div>
 
-        {/* 4. 通知設定エリア（右下） */}
+        {/* 4. 通知設定 */}
         <div style={cardStyle}>
           <h3 style={{ margin: 0, fontSize: '14px', color: '#666', textAlign: 'center' }}>通知設定</h3>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
