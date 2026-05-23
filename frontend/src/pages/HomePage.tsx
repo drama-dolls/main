@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 
 export const HomePage = () => {
-  const [userName, setUserName] = useState("ゲストユーザー");
+  const [userName] = useState("ゲストユーザー");
   const [todoProgress, setTodoProgress] = useState(100); 
-  const [points, setPoints] = useState(120);
+  const [points] = useState(120);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
