@@ -9,11 +9,6 @@ import { MyPage } from './pages/MyPage'; // ★本物のマイページを読み
 import GachaPage from "./pages/gacha";
 import GachaRollPage from "./pages/gacha-roll";
 import AccountPage from "./pages/account";
-import { HomePage } from './pages/HomePage';
-import TodoPage from './pages/to-do';
-import { MyPage } from './pages/MyPage';
-import GachaPage from './pages/gacha';
-import GachaRollPage from './pages/gacha-roll';
 
 function App() {
   return (
