@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-
-// ※本来は pages フォルダを作って別ファイルにしますが、今回はテスト用にここに書きます
-const HomePage = () => <div>ここはホーム画面yo。メーターやキャラが表示されます。</div>;
+import { HomePage } from './pages/HomePage'; // ★追加：新しく作ったホーム画面のファイルを読み込む！
 import TodoPage from "./pages/to-do";
+
+// ▼ 変更後（5行目〜12行目あたりをこれに置き換えます）
+import TodoPage from "./pages/to-do";
+
 const GachaPage = () => <div>ここはガチャ画面です。演出が入ります。</div>;
 const MyPage = () => <div>ここはマイページです。着せ替えをします。</div>;
 
@@ -13,6 +15,7 @@ function App() {
       <Routes>
         {/* Layoutを「親」にすることで、すべての子画面にヘッダーとメニューが付きます */}
         <Route path="/" element={<Layout />}>
+          {/* ★ここで、読み込んだ本物のHomePageを表示します */}
           <Route index element={<HomePage />} />
           <Route path="todo" element={<TodoPage />} />
           <Route path="gacha" element={<GachaPage />} />
