@@ -8,7 +8,7 @@ export const MyPage = () => {
   const [userName, setUserName] = useState("");
 
   const [notifications, setNotifications] = useState(true);
-  const [selectedChar, setSelectedChar] = useState('うさぎ');
+  const [selectedChar, setSelectedChar] = useState('');
 
   // ✅ APIからユーザー取得（UI変更なし・ロジックのみ追加）
   useEffect(() => {
@@ -114,32 +114,110 @@ export const MyPage = () => {
           )}
         </div>
 
-        {/* 2. キャラ選択エリア */}
+        {/* ✅ ✅ ✅ キャラ選択 */}
         <div style={cardStyle}>
           <h3 style={{ margin: 0, fontSize: '14px', color: '#666', textAlign: 'center' }}>パートナー</h3>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-            {['うさぎ', 'くま', 'ねこ'].map((char) => (
-              <button
-                key={char}
-                onClick={() => setSelectedChar(char)}
-                style={{
-                  padding: '8px',
-                  borderRadius: '50%',
-                  width: '44px',
-                  height: '44px',
-                  border: selectedChar === char ? '3px solid #FF9F1C' : '2px solid #ccc',
-                  backgroundColor: selectedChar === char ? '#FFF5EE' : '#FFF',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  boxShadow: selectedChar === char ? '2px 2px 0px #333' : 'none',
-                  transition: '0.2s'
-                }}
-              >
-                {char}
-              </button>
-            ))}
+
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
+            {(() => {
+              const characterVideos: { [key: string]: string } = {
+                あほ毛: "/videos/futsu.mp4",
+                デフォ: "/videos/bear.mp4",
+                ギャル: "/videos/cat.mp4"
+              };
+
+              const list = [
+                { name: 'あほ毛', icon: "/photo/スクリーンショット 2026-05-23 190855.png"},
+                { name: 'デフォ', icon: '🐻' },
+                { name: 'ギャル', icon: '🐱' }
+              ];
+
+              const index = list.findIndex(c => c.name === selectedChar);
+
+              return (
+                <>
+                  {/* 左 */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+
+                    {/* ◀ ▶ */}
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button onClick={() => setSelectedChar(list[(index - 1 + list.length) % list.length].name)}>
+                        ◀
+                      </button>
+
+                      <button onClick={() => setSelectedChar(list[(index + 1) % list.length].name)}>
+                        ▶
+                      </button>
+                    </div>
+
+                    {/* 丸アイコン */}
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      {list.map((char) => (
+                        <button
+                          key={char.name}
+                          onClick={() => setSelectedChar(char.name)}
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            border: selectedChar === char.name ? "3px solid #FF9F1C" : "2px solid #ccc",
+                            backgroundColor: "#FFF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            overflow: "hidden",
+                            padding: 0,
+                          }}
+                        >
+                          <img
+                          src={char.icon}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "50%",
+                          }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                  </div>
+
+                  {/* 右動画 */}
+                  <div
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      border: "2px solid #333",
+                      borderRadius: "10px",
+                      overflow: "hidden"
+                    }}
+                  >
+                    {selectedChar && (
+                      <video
+                    src={characterVideos[selectedChar]}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center"
+                    }}
+                    />
+                  )}
+
+                  </div>
+                </>
+              );
+            })()}
+
           </div>
+
           <p style={{ textAlign: 'center', margin: '4px 0 0', fontWeight: 'bold', fontSize: '12px' }}>
             いま: <span style={{ color: '#FF9F1C' }}>{selectedChar}</span>
           </p>
