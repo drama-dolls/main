@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage'; // ★追加：新しく作ったホーム画面のファイルを読み込む！
+import TodoPage from "./pages/to-do";
 
 // ※HomePageの仮コード（ここはホーム画面yo...）は消去しました！
 const TodoPage = () => <div>ここはToDo画面です。タスク一覧が表示されます。</div>;
