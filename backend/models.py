@@ -11,7 +11,7 @@ class User(Base):
     points = Column(Integer, nullable=False, default=0)
     remind_time = Column(Time, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
-    
+
 class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)
@@ -21,6 +21,7 @@ class Task(Base):
     is_routine = Column(Boolean, default=False)
     date = Column(Date, server_default=func.current_date())
     created_at = Column(DateTime, server_default=func.now())
+    is_deleted = Column(Boolean, default=False)
 
 class Item(Base):
     __tablename__ = "items"
