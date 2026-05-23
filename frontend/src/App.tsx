@@ -8,7 +8,6 @@ import { MyPage } from './pages/MyPage'; // ★本物のマイページを読み
 
 import GachaPage from "./pages/gacha";
 import GachaRollPage from "./pages/gacha-roll";
-const MyPage = () => <div>ここはマイページです。着せ替えをします。</div>;
 
 function App() {
   return (
