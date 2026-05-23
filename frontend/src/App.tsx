@@ -3,8 +3,9 @@ import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage'; // ★追加：新しく作ったホーム画面のファイルを読み込む！
 import TodoPage from "./pages/to-do";
 
-// ※HomePageの仮コード（ここはホーム画面yo...）は消去しました！
-const TodoPage = () => <div>ここはToDo画面です。タスク一覧が表示されます。</div>;
+// ▼ 変更後（5行目〜12行目あたりをこれに置き換えます）
+import TodoPage from "./pages/to-do";
+
 const GachaPage = () => <div>ここはガチャ画面です。演出が入ります。</div>;
 const MyPage = () => <div>ここはマイページです。着せ替えをします。</div>;
 
