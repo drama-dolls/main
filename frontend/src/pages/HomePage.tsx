@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 
 export const HomePage = () => {
-  const [userName, setUserName] = useState("ゲストユーザー");
+  const [userName] = useState("ゲストユーザー");
   const [todoProgress, setTodoProgress] = useState(100); 
-  const [points, setPoints] = useState(120);
+  const [points] = useState(120);
 
-  // 動画要素をコントロールするための目印（Ref）
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // メーターの数値に応じて「流す動画のファイルパス」を切り替える関数
   const getCharacterStatus = (progress: number) => {
     if (progress >= 81) {
       return { videoSrc: '/videos/cho_kenko.mp4', statusText: 'ちょうけんこう！' }; 
     } else if (progress >= 61) {
-      // ★前回のタイポ修正済み：/videos/video_project_3.mp4 にファイル名を想定
       return { videoSrc: '/videos/futsu.mp4', statusText: 'ふつう' };             
     } else if (progress >= 41) {
       return { videoSrc: '/videos/genki_nai.mp4', statusText: 'げんきがない...' };     
@@ -28,14 +25,12 @@ export const HomePage = () => {
 
   const currentStatus = getCharacterStatus(todoProgress);
 
-  // メーターが切り替わったときに、動画を確実に最初から自動再生させるための処理
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.load(); // 新しい動画ファイルを読み込み直す
-      // ブラウザによってはload()だけで再生されないことがあるためplay()も呼ぶ
+      videoRef.current.load();
       videoRef.current.play().catch(err => console.log("自動再生ブロックの回避:", err));
     }
-  }, [currentStatus.videoSrc]); // 動画のパスが変わった瞬間に実行される
+  }, [currentStatus.videoSrc]);
 
   return (
     <div style={{ 
@@ -57,7 +52,7 @@ export const HomePage = () => {
     }}>
       
       {/* 1. 上部情報バー */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <div style={{ 
           backgroundColor: '#FFF', 
           border: '2px solid #333', 
@@ -72,108 +67,118 @@ export const HomePage = () => {
         }}>
           <span>👤</span> {userName}
         </div>
-
-        <div style={{ 
-          backgroundColor: '#FFF', 
-          border: '2px solid #333', 
-          borderRadius: '12px', 
-          padding: '6px 16px',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          boxShadow: '2px 2px 0px #333',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}>
-          <span>🪙</span> おこづかい: <span style={{ color: '#FF9F1C', fontSize: '16px', fontWeight: 'bold' }}>{points}</span> PT
-        </div>
       </div>
 
-      {/* 2. 中央のレイアウトエリア */}
+      {/* 2. メインレイアウトエリア */}
       <div style={{ 
         display: 'flex', 
-        flexDirection: 'column', 
+        flexDirection: 'row', 
+        flexWrap: 'wrap',     
         alignItems: 'center', 
-        gap: '20px',
-        marginTop: '10px'
+        justifyContent: 'center',
+        gap: '40px', 
+        flexGrow: 1,
+        margin: '20px 0'
       }}>
         
-        {/* 【上】健康メーター */}
-        <div style={{ width: '100%', maxWidth: '280px', textAlign: 'center' }}>
-          <div style={{ 
-            fontWeight: 'bold', 
-            marginBottom: '8px', 
-            fontSize: '15px',
-            color: '#333',
-            textShadow: '1px 1px 0 #FFF, -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF'
-          }}>
-            💖 けんこうメーター <span style={{ color: '#FF9F1C' }}>{todoProgress}%</span>
-          </div>
-          
-          <div style={{
-            width: '100%',
-            height: '24px',
-            backgroundColor: '#FFF',
-            border: '3px solid #333',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '2px 2px 0px #333'
-          }}>
-            <div style={{
-              width: `${todoProgress}%`,
-              height: '100%',
-              backgroundColor: '#FF9F1C',
-              transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-            }} />
-          </div>
-        </div>
-
-        {/* キャラクターの状態テキスト */}
-        <div style={{ 
-          fontSize: '14px', 
-          fontWeight: 'bold', 
-          color: '#333', 
-          marginTop: '15px', 
-          marginBottom: '-10px',
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          padding: '4px 12px',
-          borderRadius: '12px',
-          border: '2px solid #333'
-        }}>
-          {currentStatus.statusText}
-        </div>
-
-        {/* 【下】★変更：丸(50%)から、おもちゃ風の角丸正方形に変更 */}
+        {/* 【左側】キャラクターエリア */}
         <div style={{
           width: '380px',
           height: '380px',
-          backgroundColor: '#FFF', // 動画が綺麗に見えるように液晶の背景は白に固定
-          borderRadius: '12px',      // ★ここを変更！丸(50%)から角丸(12px)へ
+          flexShrink: 0, 
+          backgroundColor: '#FFF', 
+          borderRadius: '16px', 
           border: '4px solid #333',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          overflow: 'hidden',       // 枠からはみ出た動画をカットする
+          overflow: 'hidden',       
           boxShadow: 'inset 4px 4px 0px rgba(0,0,0,0.1), 4px 4px 0px #333',
         }}>
           <video
             ref={videoRef}
             src={currentStatus.videoSrc}
-            loop       // ループ再生
-            muted      // 音声をミュート（自動再生に必須）
-            playsInline // スマホの全画面起動を防止
+            loop       
+            muted      
+            playsInline 
             style={{
-              width: '100%',  // 正方形の枠幅いっぱい
-              height: '100%', // 正方形の枠高さいっぱい
-              objectFit: 'cover' // ★ここが重要！動画を正方形の枠いっぱいに綺麗に広げる
+              width: '100%',  
+              height: '100%', 
+              objectFit: 'cover' 
             }}
           />
         </div>
 
+        {/* 【右側】メーター・ポイントエリア（★並び順を入れ替えました） */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '24px', minWidth: '280px' }}>
+          
+          {/* ① 健康メーター（一番上に移動） */}
+          <div style={{ width: '100%', maxWidth: '280px' }}>
+            <div style={{ 
+              fontWeight: 'bold', 
+              marginBottom: '8px', 
+              fontSize: '16px',
+              color: '#333',
+              textShadow: '1px 1px 0 #FFF, -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF'
+            }}>
+              💖 けんこうメーター <span style={{ color: '#FF9F1C' }}>{todoProgress}%</span>
+            </div>
+            
+            <div style={{
+              width: '100%',
+              height: '24px',
+              backgroundColor: '#FFF',
+              border: '3px solid #333',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '2px 2px 0px #333'
+            }}>
+              <div style={{
+                width: `${todoProgress}%`,
+                height: '100%',
+                backgroundColor: '#FF9F1C',
+                transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+              }} />
+            </div>
+          </div>
+
+          {/* ② 状態テキスト（二番目に移動） */}
+          <div style={{ 
+            fontSize: '15px', 
+            fontWeight: 'bold', 
+            color: '#333', 
+            // ★変更：白いラベル風に変更
+            backgroundColor: '#FFF',
+            border: '2px solid #333',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            boxShadow: '2px 2px 0px #333'
+          }}>
+            状態: <span style={{ color: '#FF9F1C' }}>{currentStatus.statusText}</span>
+          </div>
+          {/* ③ 所持ポイント */}
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: 'bold', 
+            color: '#333', 
+            // ★変更：白いラベル風に変更
+            backgroundColor: '#FFF',
+            border: '2px solid #333',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            boxShadow: '2px 2px 0px #333',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🪙</span> 所持ポイント: <span style={{ color: '#FF9F1C', fontSize: '18px', fontWeight: 'bold' }}>{points}</span> PT
+          </div>
+        </div>
+
       </div>
 
-      {/* 開発用のテストボタン */}
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+      {/* 3. 開発用ボタン */}
+      <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
         <button 
           onClick={() => setTodoProgress(prev => prev >= 100 ? 100 : prev + 20)}
           style={{ padding: '8px 16px', borderRadius: '12px', border: '2px solid #333', backgroundColor: '#FFF', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
