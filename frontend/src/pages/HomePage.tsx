@@ -99,7 +99,6 @@ export const HomePage = () => {
             ref={videoRef}
             src={currentStatus.videoSrc}
             loop       
-            muted      
             playsInline 
             style={{
               width: '100%',  
