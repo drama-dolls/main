@@ -29,8 +29,8 @@ export const Layout = () => {
           👾 drama doll
         </h2>
 
-        {/* 【右端】アカウントページ（マイページ）に飛ぶボタン */}
-        <Link to="/mypage" style={{
+        {/* 【右端】アカウントページアカウント登録画面に飛ぶボタン */}
+        <Link to="/account" style={{
           textDecoration: 'none',
           color: '#333',
           backgroundColor: '#FFFFFF',   // ボタンの背景は白
