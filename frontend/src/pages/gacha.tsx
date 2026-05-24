@@ -1,16 +1,42 @@
 import { useRef, useState } from 'react';
+import { api } from '../api/client';
+
+const characterVideoMap: Record<string, string> = {
+  "デフォルト": "/videos/futsu.mp4",
+  "ギャル": "/videos/gal_futsu.mp4",
+  "シッソ": "/videos/sisso_futsu.mp4",
+  "天使": "/videos/tensi_futsu.mp4",
+};
 
 const GachaPage = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  
-  // 表示・テスト用のポイント（30未満にするとポイント不足モードになります）
-  const [points] = useState(120); 
+  const [points, setPoints] = useState(120);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState<any>(null);
+  const [phase, setPhase] = useState<"idle" | "gacha" | "character">("idle");
 
-  const handlePlayGacha = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0; // 先頭にリセット
-      videoRef.current.play();          // 再生
+  const handlePlayGacha = async () => {
+    const data = await api.pullGacha();
+    if (data.detail) {
+      setError(data.detail);
+      return;
     }
+    setError("");
+    setResult(null);
+    setPending(data);
+    setPhase("gacha");
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
+  const handleGachaEnded = () => {
+    setResult(pending);
+    setPending(null);
+    setPhase("character");
+    if (pending) setPoints(pending.allowance_pt);
   };
 
   return (
@@ -64,27 +90,34 @@ const GachaPage = () => {
         maxWidth: '900px', 
       }}>
         
-        {/* 【左側】動画表示エリア (既存) */}
-        <div style={{ 
-          width: '380px', 
-          height: '380px', 
-          flexShrink: 0, 
-          border: '4px solid #333', 
-          borderRadius: '16px', 
+        {/* 【左側】動画表示エリア */}
+        <div style={{
+          width: '380px',
+          height: '380px',
+          flexShrink: 0,
+          border: '4px solid #333',
+          borderRadius: '16px',
           overflow: 'hidden',
-          backgroundColor: '#FFF', 
+          backgroundColor: '#FFF',
           boxShadow: '4px 4px 0px rgba(0,0,0,0.1)'
         }}>
-          <video
-            ref= {videoRef}
-            src="/videos/gacha.mp4"
-            muted
-            style= {{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onEnded= {(e) => {
-              e.currentTarget.pause();
-              e.currentTarget.currentTime = 0; 
-            }}
-          />
+          {phase === "character" && result ? (
+            <video
+              src={characterVideoMap[result.character_name] ?? "/videos/futsu.mp4"}
+              autoPlay
+              loop
+              muted
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              src="/videos/gacha.mp4"
+              muted
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onEnded={handleGachaEnded}
+            />
+          )}
         </div>
 
         {/* 【右側】所持ポイント ＆ ボタン エリア（縦並び） (既存) */}
@@ -120,17 +153,26 @@ const GachaPage = () => {
             )}
           </div>
 
-          {/* ② ガチャを引くボタン (既存) */}
-          <button 
-            onClick= {handlePlayGacha}
-            style= {{ 
+          {/* ② ガチャを引くボタン */}
+          <button
+            onClick={handlePlayGacha}
+            disabled={phase === "gacha"}
+            style={{
               padding: '12px 24px', fontSize: '18px', fontWeight: 'bold',
-              backgroundColor: '#FF9F1C', border: '3px solid #333', 
-              borderRadius: '12px', cursor: 'pointer', boxShadow: '4px 4px 0px #333'
+              backgroundColor: phase === "gacha" ? '#ccc' : '#FF9F1C',
+              border: '3px solid #333',
+              borderRadius: '12px', cursor: phase === "gacha" ? 'not-allowed' : 'pointer',
+              boxShadow: '4px 4px 0px #333'
             }}
           >
             🎰 ガチャを引く！
           </button>
+          {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
+          {result && phase === "character" && (
+            <div style={{ backgroundColor: '#FFF', border: '2px solid #333', borderRadius: '12px', padding: '12px 16px' }}>
+              <p style={{ margin: 0, fontWeight: 'bold' }}>{result.costume_name}（{result.rarity}）</p>
+            </div>
+          )}
         </div>
 
       </div>
