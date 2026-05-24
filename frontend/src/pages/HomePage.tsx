@@ -6,6 +6,36 @@ export const HomePage = () => {
   const [points] = useState(120);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  const [streak, setStreak] = useState(0);
+
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("daily") || "{}");
+
+    data[today] = todoProgress;
+
+    localStorage.setItem("daily", JSON.stringify(data));
+
+    const days = Object.keys(data).sort().reverse();
+
+    let count = 0;
+    let currentDate = new Date();
+
+for (let i = 0; i < days.length; i++) {
+  const dayStr = currentDate.toISOString().split("T")[0];
+
+  if (data[dayStr] === 100) {
+    count++;
+    currentDate.setDate(currentDate.getDate() - 1);
+  } else {
+    break;
+  }
+}
+
+    setStreak(count);
+  }, [todoProgress]);
 
   const getCharacterStatus = (progress: number) => {
     if (progress >= 81) {
@@ -50,8 +80,23 @@ export const HomePage = () => {
       border: '3px solid #333', 
       boxShadow: '4px 4px 0px rgba(0,0,0,0.1)' 
     }}>
-      
-      {/* 1. 上部情報バー */}
+      {/* 🔴✅ ここ追加！！ */}
+      <div style={{
+        position: 'absolute',
+        top: '70px',      // ← 上からの位置（ここ調整OK）
+        right: '70px',    // ← 右からの位置（ここも調整OK）
+        backgroundColor: '#FFF',
+        border: '2px solid #333',
+        borderRadius: '12px',
+        padding: '6px 14px',
+        fontWeight: 'bold',
+        fontSize: '13px',
+        boxShadow: '2px 2px 0px #333',
+        zIndex: 10
+        }}>
+          🔥 連続達成 {streak}日
+          </div>
+          {/* 1. 上部情報バー */}
       <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <div style={{ 
           backgroundColor: '#FFF', 
