@@ -39,6 +39,13 @@ export const MyPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+  const savedChar = localStorage.getItem("character");
+  if (savedChar && selectedChar === "") {
+    setSelectedChar(savedChar);
+  }
+}, []);
+
   const cardStyle = {
     backgroundColor: '#FFF',
     border: '3px solid #333',
@@ -123,17 +130,17 @@ export const MyPage = () => {
             {(() => {
               const characterVideos: { [key: string]: string } = {
                 あほ毛: "/videos/futsu.mp4",
-                デフォ: "/videos/bear.mp4",
-                ギャル: "/videos/cat.mp4"
+                デフォ: "/videos/sisso_futsu.mp4",
+                ギャル: "/videos/gal_futsu.mp4"
               };
 
               const list = [
                 { name: 'あほ毛', icon: "/photo/スクリーンショット 2026-05-23 190855.png"},
-                { name: 'デフォ', icon: '🐻' },
-                { name: 'ギャル', icon: '🐱' }
+                { name: 'デフォ', icon: "/photo/スクリーンショット 2026-05-24 092700.png"},
+                { name: 'ギャル', icon: '/photo/スクリーンショット 2026-05-24 092440.png' }
               ];
 
-              const index = list.findIndex(c => c.name === selectedChar);
+              const index = Math.max(0, list.findIndex(c => c.name === selectedChar));
 
               return (
                 <>
@@ -142,11 +149,20 @@ export const MyPage = () => {
 
                     {/* ◀ ▶ */}
                     <div style={{ display: "flex", gap: "10px" }}>
-                      <button onClick={() => setSelectedChar(list[(index - 1 + list.length) % list.length].name)}>
+                      <button onClick={() => {
+                        const newChar = list[(index - 1 + list.length) % list.length].name;
+                        setSelectedChar(newChar);
+                      localStorage.setItem("character", newChar);
+                    }}>
                         ◀
                       </button>
 
-                      <button onClick={() => setSelectedChar(list[(index + 1) % list.length].name)}>
+                      <button onClick={() =>{
+                      const newChar = list[(index + 1) % list.length].name;
+                      setSelectedChar(newChar);
+                      localStorage.setItem("character", newChar);
+                    }}>
+
                         ▶
                       </button>
                     </div>
@@ -156,7 +172,10 @@ export const MyPage = () => {
                       {list.map((char) => (
                         <button
                           key={char.name}
-                          onClick={() => setSelectedChar(char.name)}
+                          onClick={() => {
+                            setSelectedChar(char.name)
+                            localStorage.setItem("character", char.name);
+                          }}
                           style={{
                             width: "40px",
                             height: "40px",
@@ -217,10 +236,16 @@ export const MyPage = () => {
             })()}
 
           </div>
-
-          <p style={{ textAlign: 'center', margin: '4px 0 0', fontWeight: 'bold', fontSize: '12px' }}>
-            いま: <span style={{ color: '#FF9F1C' }}>{selectedChar}</span>
-          </p>
+          <p style={{
+            textAlign: 'center', 
+            margin: '4px 0 0', 
+            fontWeight: 'bold', 
+            fontSize: '12px' 
+            }}>
+              いま: <span style={{ color: '#FF9F1C' }}>
+                {selectedChar || "未選択"}
+                </span>
+                </p>
         </div>
 
         {/* 3. 実績 */}
