@@ -9,6 +9,7 @@ export const MyPage = () => {
 
   const [notifications, setNotifications] = useState(true);
   const [selectedChar, setSelectedChar] = useState('');
+  const [selectedCloth, setSelectedCloth] = useState("");
 
   // ✅ APIからユーザー取得（UI変更なし・ロジックのみ追加）
   useEffect(() => {
@@ -204,6 +205,41 @@ export const MyPage = () => {
 
                   </div>
 
+                  {/* 🔴✅ 衣装カード（天使） */}
+<div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+  <button
+    onClick={() =>
+{
+  if (selectedCloth === "天使") {
+    setSelectedCloth(""); // OFF
+  } else {
+    setSelectedCloth("天使"); // ON
+  }
+}}
+
+    style={{
+      width: "40px",
+      height: "40px",
+      borderRadius: "8px",
+      border: selectedCloth === "天使"
+        ? "3px solid #FF9F1C"
+        : "2px solid #ccc",
+      backgroundColor: "#FFF",
+      overflow: "hidden",
+      padding: 0
+    }}
+  >
+    <img
+      src="/photo/スクリーンショット 2026-05-24 124416.png"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover"
+      }}
+    />
+  </button>
+</div>
+
                   {/* 右動画 */}
                   <div
                     style={{
@@ -231,6 +267,35 @@ export const MyPage = () => {
                   )}
 
                   </div>
+                  
+<div>
+  <button
+    onClick={() => {
+  let finalChar = selectedChar;
+
+  // 🔴✅ 衣装があるなら合体
+  if (selectedCloth === "天使") {
+    finalChar = "天使" + selectedChar;
+  }
+
+  localStorage.setItem("characterFinal", finalChar);
+  localStorage.setItem("clothFinal", selectedCloth);
+
+  alert("キャラを確定！");
+}}
+    style={{
+      padding: "10px",
+      backgroundColor: "#FF9F1C",
+      color: "#fff",
+      border: "2px solid #333",
+      borderRadius: "10px",
+      marginLeft: "10px"
+    }}
+  >
+    確定
+  </button>
+</div>
+
                 </>
               );
             })()}
