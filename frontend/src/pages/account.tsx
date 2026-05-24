@@ -22,7 +22,7 @@ export default function AccountPage() {
         })
       });
 
-      const data = await res.json();
+      await res.json();
 
       // ✅ ローカルにも保存（UI用）
       localStorage.setItem("isLoggedIn", "true");
