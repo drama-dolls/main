@@ -19,6 +19,27 @@ class TaskUpdate(BaseModel):
     is_done: bool
 
 
+def settle_daily_meter(user: models.User, tasks: list, db: Session):
+    total = len(tasks)
+    if total == 0:
+        return
+
+    done = len([t for t in tasks if t.is_done])
+    incomplete = total - done
+
+    if incomplete == 0:
+        user.health_meter += 10
+    else:
+        user.health_meter -= incomplete * 5
+
+    user.health_meter = max(0.0, user.health_meter)
+
+    if user.health_meter > 100:
+        overflow = user.health_meter - 100
+        user.allowance_pt += int(overflow)
+        user.health_meter = 100.0
+
+
 @router.get("/tasks")
 def get_tasks(
     db: Session = Depends(get_db),
@@ -26,7 +47,22 @@ def get_tasks(
 ):
     today = datetime.date.today()
 
-    # 今日作成した通常タスク + ルーティンタスク（日付問わず全件）を返す
+    # 前日のルーティンがあれば精算してリセット
+    yesterday = today - datetime.timedelta(days=1)
+    old_routines = db.query(models.Task).filter(
+        models.Task.user_id == current_user.id,
+        models.Task.is_routine == True,
+        models.Task.date == yesterday,
+        models.Task.is_deleted == False
+    ).all()
+
+    if old_routines:
+        settle_daily_meter(current_user, old_routines, db)
+        for task in old_routines:
+            task.is_done = False
+            task.date = today
+
+    # 今日のタスク取得
     tasks = db.query(models.Task).filter(
         models.Task.user_id == current_user.id,
         models.Task.is_deleted == False
@@ -34,19 +70,25 @@ def get_tasks(
         (models.Task.date == today) | (models.Task.is_routine == True)
     ).all()
 
-    # ルーティンタスクを日付をまたいでいたらリセット
-    for task in tasks:
-        if task.is_routine and task.date < today:
-            task.is_done = False
-            task.date = today
     db.commit()
 
     total = len(tasks)
     done = len([t for t in tasks if t.is_done])
 
     return {
-        "tasks": tasks,
-        "progress": {"done": done, "total": total}
+        "tasks": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "is_done": t.is_done,
+                "is_routine": t.is_routine,
+                "date": t.date,
+            }
+            for t in tasks
+        ],
+        "progress": {"done": done, "total": total},
+        "health_meter": current_user.health_meter,
+        "allowance_pt": current_user.allowance_pt,
     }
 
 
@@ -59,7 +101,8 @@ def create_task(
     new_task = models.Task(
         user_id=current_user.id,
         title=task_data.title,
-        is_routine=task_data.is_routine
+        is_routine=task_data.is_routine,
+        date=datetime.date.today()   # ← 追加
     )
     db.add(new_task)
     db.commit()
@@ -76,14 +119,10 @@ def update_task(
 ):
     task = db.query(models.Task).filter(
         models.Task.id == task_id,
-        models.Task.user_id == current_user.id  # 自分のタスクのみ操作可能
+        models.Task.user_id == current_user.id
     ).first()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-
-    # False→True になる時だけポイント付与（二重付与防止）
-    if task_data.is_done and not task.is_done:
-        current_user.points += 10
 
     task.is_done = task_data.is_done
     db.commit()
@@ -91,8 +130,8 @@ def update_task(
 
     return {
         "task": task,
-        "points_earned": 10 if task_data.is_done and not task.is_done else 0,
-        "total_points": current_user.points
+        "health_meter": current_user.health_meter,
+        "allowance_pt": current_user.allowance_pt,
     }
 
 
@@ -104,11 +143,10 @@ def delete_task(
 ):
     task = db.query(models.Task).filter(
         models.Task.id == task_id,
-        models.Task.user_id == current_user.id  # 自分のタスクのみ削除可能
+        models.Task.user_id == current_user.id
     ).first()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    db.delete(task)
+    task.is_deleted = True
     db.commit()
     return {"message": "Task deleted"}
-  
