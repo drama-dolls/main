@@ -8,8 +8,8 @@ class User(Base):
     id           = Column(Integer, primary_key=True, index=True)
     username     = Column(String(50), nullable=False, unique=True)
     password     = Column(String(255), nullable=False)
-    allowance_pt = Column(Integer, nullable=False, default=0)
-    health_meter = Column(Float, nullable=False, default=0.0)
+    allowance_pt = Column(Integer, nullable=False, default=30)
+    health_meter = Column(Float, nullable=False, default=100.0)
     remind_time  = Column(Time, nullable=True)
     created_at   = Column(DateTime, server_default=func.now())
 

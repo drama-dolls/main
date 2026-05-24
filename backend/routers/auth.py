@@ -63,9 +63,11 @@ def register(
         raise HTTPException(status_code=400, detail="Username already exists")
 
     new_user = models.User(
-        username=form_data.username,
-        password=get_password_hash(form_data.password),
-    )
+      username=form_data.username,
+      password=get_password_hash(form_data.password),
+      allowance_pt=30,
+      health_meter=100.0,
+  )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
