@@ -56,3 +56,10 @@ class UserSelection(Base):
     user_id      = Column(Integer, ForeignKey("users.id"), primary_key=True)
     character_id = Column(Integer, ForeignKey("characters.id"), nullable=True)
     costume_id   = Column(Integer, ForeignKey("costumes.id"), nullable=True)
+
+class UserCharacter(Base):
+    __tablename__ = "user_characters"
+    id           = Column(Integer, primary_key=True, index=True)
+    user_id      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=False)
+    obtained_at  = Column(DateTime, server_default=func.now())

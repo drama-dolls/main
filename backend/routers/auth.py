@@ -69,8 +69,19 @@ def register(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"message": "User created", "user_id": new_user.id}
 
+    # ギャル以外のキャラクターを初期付与
+    default_characters = db.query(models.Character).filter(
+        models.Character.name != "ギャル"
+    ).all()
+    for character in default_characters:
+        db.add(models.UserCharacter(
+            user_id=new_user.id,
+            character_id=character.id
+        ))
+    db.commit()
+
+    return {"message": "User created", "user_id": new_user.id}
 
 @router.post("/login")
 def login(

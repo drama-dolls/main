@@ -69,6 +69,14 @@ def update_selection(
         ).first()
         if not owned:
             raise HTTPException(status_code=403, detail="Costume not owned")
+    
+    if body.character_id:
+      owned = db.query(models.UserCharacter).filter(
+          models.UserCharacter.user_id       == current_user.id,
+          models.UserCharacter.character_id  == body.character_id
+      ).first()
+      if not owned:
+          raise HTTPException(status_code=403, detail="Character not owned")
 
     selection = db.query(models.UserSelection).filter(
         models.UserSelection.user_id == current_user.id
@@ -93,3 +101,23 @@ def update_selection(
         "costume_id": selection.costume_id,
     }
   
+@router.get("/users/me/characters")
+def get_my_characters(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+      user_characters = db.query(models.UserCharacter).filter(
+          models.UserCharacter.user_id == current_user.id
+      ).all()
+
+      result = []
+      for uc in user_characters:
+          character = db.query(models.Character).filter(
+              models.Character.id == uc.character_id
+          ).first()
+          result.append({
+              "character_id": character.id,
+              "name":         character.name,
+              "image_url":    character.image_url,
+          })
+      return result
