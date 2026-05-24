@@ -12,6 +12,7 @@ export const HomePage = () => {
   // ✅ 確定キャラ
   const [selectedChar, setSelectedChar] = useState("");
   const [selectedCloth, setSelectedCloth] = useState("");
+  const [isMuted, setIsMuted] = useState(true);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -85,10 +86,12 @@ export const HomePage = () => {
 
   useEffect(() => {
     if (videoRef.current) {
+      
+videoRef.current.muted = isMuted; // 🔴✅ 音状態反映
       videoRef.current.load();
-      videoRef.current.play().catch(err => console.log("自動再生ブロックの回避:", err));
+      videoRef.current.play().catch(() => {});
     }
-  }, [finalVideoSrc]);
+  }, [finalVideoSrc, isMuted]);
 
   return (
     <div style={{ 
@@ -108,6 +111,24 @@ export const HomePage = () => {
       border: '3px solid #333', 
       boxShadow: '4px 4px 0px rgba(0,0,0,0.1)' 
     }}>
+      
+{/* 🔴✅ 音ON/OFFボタン */}
+      <button
+        onClick={() => setIsMuted(prev => !prev)}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          padding: "8px 12px",
+          borderRadius: "10px",
+          border: "2px solid #333",
+          backgroundColor: "#FFF",
+          fontWeight: "bold"
+        }}
+      >
+        {isMuted ? "🔇 ミュート中" : "🔊 音あり"}
+      </button>
+
       
       {/* 🔥 ストリーク */}
       <div style={{
@@ -174,7 +195,7 @@ export const HomePage = () => {
             ref={videoRef}
             src={finalVideoSrc}
             loop       
-            muted      
+            muted={isMuted}      
             playsInline 
             style={{
               width: '100%',  
